@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="style.css">
+    <title>Tic-Tac-Toe: Final Edition</title>
+    <style>
+        body {
+            background: #121212;
+            color: white;
+            font-family: 'Segoe UI', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .container {
+            text-align: center;
+            background: #1e1e1e;
+            padding: 40px;
+            border-radius: 25px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.7);
+            border: 1px solid #333;
+            min-width: 320px;
+        }
+
+        .screen { display: none; }
+        .active { display: block; }
+
+        h1 { font-size: 2.5rem; margin-bottom: 30px; color: #00d2ff; text-shadow: 0 0 10px rgba(0,210,255,0.5); }
+
+        .menu-buttons { display: flex; flex-direction: column; gap: 15px; align-items: center; }
+        
+        .btn-main {
+            width: 220px;
+            padding: 18px;
+            font-size: 1.4rem;
+            background: #00d2ff;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: 0.3s;
+            color: #121212;
+        }
+
+        .btn-sub {
+            background: #ff007f;
+            padding: 10px 25px;
+            border: none;
+            border-radius: 8px;
+            color: white;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: bold;
+            transition: 0.3s;
+        }
+
+        .btn-main:hover, .btn-sub:hover { transform: translateY(-3px); box-shadow: 0 5px 15px rgba(255,0,127,0.4); }
+
+        .board {
+            display: grid;
+            grid-template-columns: repeat(3, 100px);
+            grid-gap: 12px;
+            margin: 20px auto;
+        }
+
+        .cell {
+            width: 100px;
+            height: 100px;
+            background: #2a2a2a;
+            border-radius: 15px;
+            font-size: 3rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .cell:hover { background: #333; }
+
+        .score-board { 
+            margin-bottom: 15px; 
+            font-size: 1.4rem; 
+            font-weight: bold;
+            color: #ff007f;
+            background: rgba(255, 0, 127, 0.1);
+            padding: 10px;
+            border-radius: 10px;
+        }
+
+        .hidden { display: none; }
+        
+        .back-btn { 
+            margin-top: 25px; 
+            background: none; 
+            border: none; 
+            color: #666; 
+            cursor: pointer; 
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div id="menu-screen" class="screen active">
+            <h1>TIC TAC TOE</h1>
+            <div class="menu-buttons">
+                <button class="btn-main" onclick="initGame('endless')">Start</button>
+                <button class="btn-sub" onclick="initGame('to3')">До 3-ьох</button>
+            </div>
+        </div>
+
+        <div id="game-screen" class="screen">
+            <div id="score-display" class="score-board hidden">
+                X: <span id="sX">0</span> — O: <span id="sO">0</span>
+            </div>
+            <h2 id="status">Хід Х</h2>
+            <div class="board" id="board">
+                <div class="cell" onclick="tap(0)"></div>
+                <div class="cell" onclick="tap(1)"></div>
+                <div class="cell" onclick="tap(2)"></div>
+                <div class="cell" onclick="tap(3)"></div>
+                <div class="cell" onclick="tap(4)"></div>
+                <div class="cell" onclick="tap(5)"></div>
+                <div class="cell" onclick="tap(6)"></div>
+                <div class="cell" onclick="tap(7)"></div>
+                <div class="cell" onclick="tap(8)"></div>
+            </div>
+            <button class="btn-sub" onclick="handleRestart()">Restart</button>
+            <br>
+            <button class="back-btn" onclick="goToMenu()">Назад у меню</button>
+        </div>
+    </div>
+
+    <script>
+        let mode = ''; 
+        let board = ["", "", "", "", "", "", "", "", ""];
+        let player = "X";
+        let score = {X: 0, O: 0};
+        let active = true;
+        let isGameOver = false;
+
+        function initGame(m) {
+            mode = m;
+            isGameOver = false;
+            score = {X: 0, O: 0};
+            document.getElementById('sX').innerText = 0;
+            document.getElementById('sO').innerText = 0;
+            
+            document.getElementById('menu-screen').classList.remove('active');
+            document.getElementById('game-screen').classList.add('active');
+            
+            if(mode === 'to3') {
+                document.getElementById('score-display').classList.remove('hidden');
+            } else {
+                document.getElementById('score-display').classList.add('hidden');
+            }
+            resetBoard();
+        }
+
+        function tap(i) {
+            if(board[i] !== "" || !active || isGameOver) return;
+            
+            board[i] = player;
+            const cells = document.querySelectorAll('.cell');
+            cells[i].innerText = player;
+            cells[i].style.color = player === "X" ? "#00d2ff" : "#ff007f";
+
+            if(checkWin()) {
+                active = false;
+                if(mode === 'to3') {
+                    score[player]++;
+                    document.getElementById('sX').innerText = score.X;
+                    document.getElementById('sO').innerText = score.O;
+                    
+                    if(score[player] === 3) {
+                        document.getElementById('status').innerText = `🏆 ${player} — ЧЕМПІОН!`;
+                        isGameOver = true;
+                        return;
+                    }
+                }
+                document.getElementById('status').innerText = `Виграв ${player}!`;
+                setTimeout(resetBoard, 1200);
+            } else if(!board.includes("")) {
+                document.getElementById('status').innerText = "Нічия!";
+                setTimeout(resetBoard, 1200);
+            } else {
+                player = player === "X" ? "O" : "X";
+                document.getElementById('status').innerText = `Хід ${player}`;
+            }
+        }
+
+        function checkWin() {
+            const lines = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+            return lines.some(l => l.every(i => board[i] === player));
+        }
+
+        function handleRestart() {
+            if(isGameOver) {
+                score = {X: 0, O: 0};
+                document.getElementById('sX').innerText = 0;
+                document.getElementById('sO').innerText = 0;
+                isGameOver = false;
+            }
+            resetBoard();
+        }
+
+        function resetBoard() {
+            board = ["", "", "", "", "", "", "", "", ""];
+            player = "X";
+            active = true;
+            document.querySelectorAll('.cell').forEach(c => c.innerText = "");
+            document.getElementById('status').innerText = "Хід Х";
+        }
+
+        function goToMenu() {
+            document.getElementById('menu-screen').classList.add('active');
+            document.getElementById('game-screen').classList.remove('active');
+        }
+    </script>
+    <script src="script.js"></script>
+</body>
+</html>
